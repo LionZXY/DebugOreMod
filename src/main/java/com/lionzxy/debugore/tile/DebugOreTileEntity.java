@@ -1,8 +1,11 @@
 package com.lionzxy.debugore.tile;
 
+import com.lionzxy.debugore.DebugOreConfig;
 import com.lionzxy.debugore.DebugOreMod;
 import com.lionzxy.debugore.blocks.DebugOreBlock;
 import net.minecraft.block.Block;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -18,11 +21,12 @@ import java.util.List;
  */
 public class DebugOreTileEntity extends TileEntity {
 
+        EntityPlayer player;
         public static List<Block> onlyDigList = new ArrayList<Block>();
         private int radius = 1;
         private boolean start = false;
         private int startX, startY, startZ;
-        private int progress;
+        private boolean start2 = false;
 
         public int getRadius(){
             return radius;
@@ -36,8 +40,9 @@ public class DebugOreTileEntity extends TileEntity {
             radius = radius / 2;
         }
 
-        public void letStart(){
+        public void letStart(EntityPlayer player){
             start = true;
+            this.player = player;
             startX = this.xCoord + radius;
             startY = this.yCoord - 1;
             startZ = this.zCoord + radius;
@@ -65,10 +70,13 @@ public class DebugOreTileEntity extends TileEntity {
 
         @Override
         public void updateEntity() {
-            if(this.getWorldObj().getStrongestIndirectPower(this.xCoord, this.yCoord, this.zCoord) != 0 && !this.getWorldObj().isRemote){
-                System.out.println("Start dig. X:" + startX + " Y:" + startY + " Z:" + startZ);
+            for(int i = 0; i < DebugOreConfig.blockPerTick; i++)
+            if(this.getWorldObj().getStrongestIndirectPower(this.xCoord, this.yCoord, this.zCoord) != 0 && !this.getWorldObj().isRemote && start){
+                if(!start2){
+                    player.addChatComponentMessage(new ChatComponentText("Start ..."));
+                    start2 = true;}
                 World world = this.getWorldObj();
-                digBlock(startX,startY,startZ);
+                digBlock(startX, startY, startZ, world);
                 if(startX != this.xCoord - radius)
                     startX--;
                 else {
@@ -77,9 +85,12 @@ public class DebugOreTileEntity extends TileEntity {
                         startZ --;
                     else {
                         startZ = this.zCoord + radius;
-                        if(startY != 0)
+                        if(startY != 1)
                             startY--;
-                        else start = false;
+                        else {
+                            player.addChatComponentMessage(new ChatComponentText("End!"));
+                            start = false;
+                            start2 = false;}
                     }}
             }
         }
@@ -89,16 +100,19 @@ public class DebugOreTileEntity extends TileEntity {
             return true;
         }
 
-        private void digBlock(int x, int y, int z){
-            if(checkBlock(this.getWorldObj().getBlock(x,y,z))){
-                this.getWorldObj().setBlockToAir(x,y,z);
+        private void digBlock(int x, int y, int z,World world){
+            if(checkBlock(world.getBlock(x,y,z))){
+                world.setBlockToAir(x,y,z);
+                if((startZ == this.zCoord + radius || startZ == this.zCoord - radius || startX == this.xCoord + radius || startX == this.xCoord - radius)&&DebugOreConfig.glassWall)
+                    world.setBlock(startX, startY, startZ, DebugOreConfig.wallBlock);
+
             }
         }
 
         public boolean checkBlock(Block block) {
 
             if(block != null)
-            if(DebugOreMod.smart){
+            if(DebugOreConfig.smartMod){
                 if(checkToOre(block))
                     return false;
                 else return true;

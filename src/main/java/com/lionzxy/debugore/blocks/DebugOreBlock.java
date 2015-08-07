@@ -6,6 +6,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentText;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 /**
@@ -25,13 +26,19 @@ public class DebugOreBlock extends BlockContainer {
     {
 
             DebugOreTileEntity tileEntity = (DebugOreTileEntity) world.getTileEntity(x, y, z);
-            tileEntity.letStart();
+            tileEntity.letStart(player);
             if (player.isSneaking())
                 tileEntity.removeRadius();
             else tileEntity.addRadius();
             if (!world.isRemote)
                 player.addChatMessage(new ChatComponentText("Area for debug: " + tileEntity.getRadius() + "x" + tileEntity.getRadius()));
 
+        return true;
+    }
+
+    @Override
+    public boolean isNormalCube(IBlockAccess world, int x, int y, int z)
+    {
         return true;
     }
 
