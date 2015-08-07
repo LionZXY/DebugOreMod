@@ -67,8 +67,9 @@ public class DebugOreTileEntity extends TileEntity {
 
         @Override
         public void updateEntity() {
-            for(int i = 0; i < DebugOreConfig.blockPerTick; i++)
-            if(this.getWorldObj().getStrongestIndirectPower(this.xCoord, this.yCoord, this.zCoord) != 0 && !this.getWorldObj().isRemote && start){
+
+            if(this.getWorldObj().getStrongestIndirectPower(this.xCoord, this.yCoord, this.zCoord) != 0 && !this.getWorldObj().isRemote && start)
+                for(int i = 0; i < getBlockPerTick(); i++){
                 if(!start2){
                     player.addChatComponentMessage(new ChatComponentText("Start ..."));
                     start2 = true;}
@@ -100,7 +101,7 @@ public class DebugOreTileEntity extends TileEntity {
         private void digBlock(int x, int y, int z,World world){
             if(checkBlock(world.getBlock(x, y, z))){
                 world.setBlockToAir(x, y, z);
-                if((startZ == this.zCoord + radius || startZ == this.zCoord - radius || startX == this.xCoord + radius || startX == this.xCoord - radius)&&DebugOreConfig.glassWall)
+                if(DebugOreConfig.glassWall&&(startZ == this.zCoord + radius || startZ == this.zCoord - radius || startX == this.xCoord + radius || startX == this.xCoord - radius))
                     world.setBlock(startX, startY, startZ, DebugOreConfig.wallBlock);
 
             }
@@ -126,9 +127,14 @@ public class DebugOreTileEntity extends TileEntity {
             for(int i : OreDictionary.getOreIDs(new ItemStack(block)))
                 if(OreDictionary.getOreName(i).substring(0,3).equalsIgnoreCase("ore"))
                     return true;
-
-
             return false;
+        }
+
+        int getBlockPerTick(){
+            if(DebugOreConfig.allNow){
+                return (radius * 4 + 4)*this.yCoord;
+            }
+            else return DebugOreConfig.blockPerTick;
         }
         /*@Override
         public Packet getDescriptionPacket(){

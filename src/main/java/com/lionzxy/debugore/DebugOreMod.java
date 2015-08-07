@@ -17,7 +17,7 @@ import net.minecraftforge.common.MinecraftForge;
 /**
  * Created by nikit on 06.08.2015.
  */
-@Mod(modid = "debugore", name = "Debug Ore Mod", version = "1.0", guiFactory = "com.lionzxy.debugore.config.ConfigGuiFactory")
+@Mod(modid = "debugore", name = "Debug Ore Mod", version = "1.0.3", guiFactory = "com.lionzxy.debugore.config.ConfigGuiFactory")
 public class DebugOreMod {
     public static final String modid = "debugore";
     public static Block debugoreblock;
