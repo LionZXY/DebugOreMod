@@ -1,31 +1,47 @@
 package com.lionzxy.debugore.tile;
 
+import com.lionzxy.debugore.DebugOreMod;
+import com.lionzxy.debugore.blocks.DebugOreBlock;
+import net.minecraft.block.Block;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.Packet;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.world.World;
+import net.minecraftforge.oredict.OreDictionary;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by nikit on 06.08.2015.
  */
 public class DebugOreTileEntity extends TileEntity {
-        /*
-        Crash:
-        [22:02:37] [Server thread/ERROR] [FML]: A TileEntity type com.lionzxy.debugore.tile.DebugOreTileEntity has throw an exception trying to write state. It will not persist. Report this to the mod author
-                java.lang.RuntimeException: class com.lionzxy.debugore.tile.DebugOreTileEntity is missing a mapping! This is a bug!
-	            at net.minecraft.tileentity.TileEntity.writeToNBT(TileEntity.java:96) ~[TileEntity.class:?]
-	            at com.lionzxy.debugore.tile.DebugOreTileEntity.writeToNBT(DebugOreTileEntity.java:23) ~[DebugOreTileEntity.class:?]
-	            at net.minecraft.world.chunk.storage.AnvilChunkLoader.writeChunkToNBT(AnvilChunkLoader.java:395) [AnvilChunkLoader.class:?]
-	            at net.minecraft.world.chunk.storage.AnvilChunkLoader.saveChunk(AnvilChunkLoader.java:204) [AnvilChunkLoader.class:?]
-	            at net.minecraft.world.gen.ChunkProviderServer.safeSaveChunk(ChunkProviderServer.java:287) [ChunkProviderServer.class:?]
-	            at net.minecraft.world.gen.ChunkProviderServer.saveChunks(ChunkProviderServer.java:340) [ChunkProviderServer.class:?]
-	            at net.minecraft.world.WorldServer.saveAllChunks(WorldServer.java:863) [WorldServer.class:?]
-	            at net.minecraft.server.MinecraftServer.saveAllWorlds(MinecraftServer.java:370) [MinecraftServer.class:?]
-	            at net.minecraft.server.integrated.IntegratedServer.tick(IntegratedServer.java:113) [IntegratedServer.class:?]
-	            at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:485) [MinecraftServer.class:?]
-	            at net.minecraft.server.MinecraftServer$2.run(MinecraftServer.java:752) [MinecraftServer$2.class:?]
-         */
 
-        private int radius = 0;
+        public static List<Block> onlyDigList = new ArrayList<Block>();
+        private int radius = 1;
+        private boolean start = false;
+        private int startX, startY, startZ;
+        private int progress;
+
+        public int getRadius(){
+            return radius;
+        }
+
+        public void addRadius(){
+            radius = radius * 2;
+        }
+
+        public void removeRadius(){
+            radius = radius / 2;
+        }
+
+        public void letStart(){
+            start = true;
+            startX = this.xCoord + radius;
+            startY = this.yCoord - 1;
+            startZ = this.zCoord + radius;
+        }
         public DebugOreTileEntity(){
 
         }
@@ -33,14 +49,76 @@ public class DebugOreTileEntity extends TileEntity {
         public void readFromNBT(NBTTagCompound nbt){
             super.readFromNBT(nbt);
             radius = nbt.getInteger("Radius");
+            startX = nbt.getInteger("StartX");
+            startY = nbt.getInteger("StartY");
+            startZ = nbt.getInteger("StartZ");
         }
 
         public void writeToNBT(NBTTagCompound nbt){
             super.writeToNBT(nbt);
             nbt.setInteger("Radius", radius);
+            nbt.setInteger("StartX",startX);
+            nbt.setInteger("StartY",startY);
+            nbt.setInteger("StartZ",startZ);
             System.out.println(nbt);
         }
 
+        @Override
+        public void updateEntity() {
+            if(this.getWorldObj().getStrongestIndirectPower(this.xCoord, this.yCoord, this.zCoord) != 0 && !this.getWorldObj().isRemote){
+                System.out.println("Start dig. X:" + startX + " Y:" + startY + " Z:" + startZ);
+                World world = this.getWorldObj();
+                digBlock(startX,startY,startZ);
+                if(startX != this.xCoord - radius)
+                    startX--;
+                else {
+                    startX = this.xCoord + radius;
+                    if(startZ != this.zCoord - radius)
+                        startZ --;
+                    else {
+                        startZ = this.zCoord + radius;
+                        if(startY != 0)
+                            startY--;
+                        else start = false;
+                    }}
+            }
+        }
+
+        @Override
+        public boolean canUpdate() {
+            return true;
+        }
+
+        private void digBlock(int x, int y, int z){
+            if(checkBlock(this.getWorldObj().getBlock(x,y,z))){
+                this.getWorldObj().setBlockToAir(x,y,z);
+            }
+        }
+
+        public boolean checkBlock(Block block) {
+
+            if(block != null)
+            if(DebugOreMod.smart){
+                if(checkToOre(block))
+                    return false;
+                else return true;
+            }
+            else
+            for(Block i : DebugOreTileEntity.onlyDigList)
+                if(block == i)
+                    return true;
+
+            return false;
+        }
+
+        boolean checkToOre(Block block){
+            for(int i : OreDictionary.getOreIDs(new ItemStack(block)))
+                if(OreDictionary.getOreName(i).substring(0,3).equalsIgnoreCase("ore"))
+                    return true;
+
+
+            return false;
+        }
         /*@Override
         public Packet getDescriptionPacket(){
             NBTTagCompound tiletag = new NBTTagCompound();
