@@ -30,11 +30,11 @@ public class DebugOreTileEntity extends TileEntity {
         }
 
         public void addRadius(){
-            radius = radius * 2;
+            radius = radius * DebugOreConfig.toNext;
         }
 
         public void removeRadius(){
-            radius = radius / 2;
+            radius = radius / DebugOreConfig.toNext;
         }
 
         public void letStart(EntityPlayer player){
