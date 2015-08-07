@@ -1,11 +1,8 @@
 package com.lionzxy.debugore.tile;
 
-import com.lionzxy.debugore.DebugOreConfig;
-import com.lionzxy.debugore.DebugOreMod;
-import com.lionzxy.debugore.blocks.DebugOreBlock;
+import com.lionzxy.debugore.config.DebugOreConfig;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -101,8 +98,8 @@ public class DebugOreTileEntity extends TileEntity {
         }
 
         private void digBlock(int x, int y, int z,World world){
-            if(checkBlock(world.getBlock(x,y,z))){
-                world.setBlockToAir(x,y,z);
+            if(checkBlock(world.getBlock(x, y, z))){
+                world.setBlockToAir(x, y, z);
                 if((startZ == this.zCoord + radius || startZ == this.zCoord - radius || startX == this.xCoord + radius || startX == this.xCoord - radius)&&DebugOreConfig.glassWall)
                     world.setBlock(startX, startY, startZ, DebugOreConfig.wallBlock);
 
