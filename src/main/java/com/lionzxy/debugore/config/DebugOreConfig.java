@@ -17,6 +17,7 @@ public class DebugOreConfig {
     public static int blockPerTick;
     public static boolean glassWall;
     public static Block wallBlock;
+    public static int toNext;
 
 
     public static void Init(){
@@ -31,6 +32,7 @@ public class DebugOreConfig {
         blockPerTick = config.getInt("Block per Tick", "general", 40, 1, 9999999, "How many break block per Tick");
         glassWall = config.getBoolean("Glass Wall", "general", true, "Enable or disable glass wall");
         wallBlock = Block.getBlockFromName(config.getString("Wall Block", "general", "minecraft:glass", ""));
+        toNext = config.getInt("This radius *","general", 2, 1, 1000,"On click : Radius * This value = Radius");
         if(!smartMod)
             for(String i : config.getStringList("Only dig block","general",new String[]{"minecraft:dirt","minecraft:stone"},""))
                 DebugOreTileEntity.onlyDigList.add(Block.getBlockFromName(i));
